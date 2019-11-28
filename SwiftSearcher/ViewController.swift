@@ -6,6 +6,8 @@
 //  Copyright © 2019 Keishin CHOU. All rights reserved.
 //
 
+import CoreSpotlight
+import MobileCoreServices
 import SafariServices
 import UIKit
 
@@ -85,11 +87,32 @@ class ViewController: UITableViewController {
     }
     
     func index(item: Int) {
+        let project = projects[item]
         
+        let attributeSet = CSSearchableItemAttributeSet(itemContentType: kUTTypeText as String)
+        attributeSet.title = project[0]
+        attributeSet.contentDescription = project[1]
+        
+        let item = CSSearchableItem(uniqueIdentifier: String(item), domainIdentifier: "com.hackingwithswift", attributeSet: attributeSet)
+        item.expirationDate = Date.distantFuture
+        
+        CSSearchableIndex.default().indexSearchableItems([item]) { (error) in
+            if let error = error {
+                print("Indexing error: \(error.localizedDescription)")
+            } else {
+                print("Search item successfully indexed!")
+            }
+        }
     }
     
     func deindex(item: Int) {
-        
+        CSSearchableIndex.default().deleteSearchableItems(withIdentifiers: [String(item)]) { (error) in
+            if let error = error {
+                print("Deindexing error: \(error.localizedDescription)")
+            } else {
+                print("Search item successfully removed.")
+            }
+        }
     }
     
     func makeAttributedString(title: String, subtitle: String) -> NSAttributedString {
